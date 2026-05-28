@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Technique Camp</title>
+
+  <style>
+    :root {
+      --bg: #060914;
+      --bg2: #0b1020;
+      --card: rgba(17, 24, 39, 0.86);
+      --card2: rgba(10, 16, 30, 0.92);
+      --text: #f3f4f6;
+      --muted: #c0c7d4;
+      --primary: #d4a73b;
+      --primary-dark: #b98b20;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --border: rgba(212, 167, 59, 0.22);
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(212, 167, 59, 0.13), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.10), transparent 28%),
+        linear-gradient(180deg, #060914 0%, #091121 45%, #060914 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+    }
+
+    .app {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 20px;
+      margin: 16px 0;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .compact-card {
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .center { text-align: center; }
+
+    h1, h2, h3 { margin: 0 0 12px 0; line-height: 1.15; }
+    h1 { text-align: center; font-size: clamp(28px, 7vw, 44px); }
+    h2 { font-size: clamp(23px, 5.5vw, 32px); }
+    h3 { font-size: 20px; }
+
+    p { color: var(--muted); line-height: 1.55; }
+
+    label {
+      display: block;
+      margin: 14px 0 6px 0;
+      color: #f8e9bd;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(212, 167, 59, 0.7);
+      box-shadow: 0 0 0 3px rgba(212, 167, 59, 0.15);
+    }
+
+    textarea { min-height: 90px; resize: vertical; }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-top: 14px;
+      background: var(--primary);
+      color: #17130a;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform .15s ease, filter .15s ease;
+    }
+
+    button:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .btn-danger { background: rgba(239, 68, 68, 0.16); color: #fecaca; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .btn-small { width: auto; min-width: 118px; padding: 10px 12px; margin: 4px 4px 4px 0; font-size: 13px; border-radius: 12px; }
+
+    .top-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .menu-grid, .stats-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .menu-button {
+      min-height: 118px;
+      font-size: 21px;
+      border: 1px solid rgba(212, 167, 59, 0.24);
+      background: linear-gradient(135deg, rgba(212, 167, 59, 0.98), rgba(247, 219, 147, 0.88));
+    }
+
+    .status {
+      text-align: center;
+      font-size: 14px;
+      color: var(--muted);
+      margin: 10px 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+
+    .pill.online { color: #bbf7d0; background: rgba(34, 197, 94, 0.13); border-color: rgba(34, 197, 94, 0.35); }
+    .pill.local { color: #fde68a; background: rgba(245, 158, 11, 0.13); border-color: rgba(245, 158, 11, 0.35); }
+
+    .error { color: #fecaca; font-weight: bold; text-align: center; }
+    .success { color: #bbf7d0; font-weight: bold; }
+
+    .warning-box {
+      display: none;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.34);
+      color: #fde68a;
+      line-height: 1.55;
+      margin: 12px 0;
+    }
+
+    .warning-box.show { display: block; }
+
+    .suggestion {
+      display: none;
+      background: rgba(34, 197, 94, 0.12);
+      color: #bbf7d0;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      border-radius: 14px;
+      padding: 12px;
+      margin: 12px 0;
+      line-height: 1.5;
+    }
+
+    .suggestion.show { display: block; }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(4, 8, 18, 0.55);
+    }
+
+    table { width: 100%; border-collapse: collapse; min-width: 700px; background: transparent; }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      vertical-align: top;
+      color: var(--text);
+    }
+
+    th { background: rgba(212, 167, 59, 0.14); color: #fff3cf; font-size: 13px; }
+    td { font-size: 14px; }
+
+    .empty { text-align: center; color: var(--muted); padding: 18px; }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 auto 14px auto;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(212, 167, 59, 0.10);
+      border: 1px solid rgba(212, 167, 59, 0.24);
+      color: #f7db93;
+      font-size: 14px;
+    }
+
+    .footer-note {
+      font-size: 13px;
+      text-align: center;
+      color: #c6ccd7;
+      margin-top: 20px;
+    }
+
+    .muted { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .code-inline { font-family: Consolas, Monaco, monospace; color: #fde68a; }
+
+    @media (min-width: 720px) {
+      .menu-grid { grid-template-columns: 1fr 1fr; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+      .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    }
+
+    @media (max-width: 640px) {
+      .app { padding: 12px; }
+      .card { padding: 16px; border-radius: 20px; }
+      table, thead, tbody, th, td, tr { display: block; min-width: 0; }
+      thead { display: none; }
+      tr { border-bottom: 1px solid rgba(255,255,255,0.12); padding: 10px; }
+      td { border-bottom: 0; padding: 8px 2px; }
+      td::before { content: attr(data-label); display: block; color: #f7db93; font-weight: bold; font-size: 12px; margin-bottom: 4px; }
+      .btn-small { width: 100%; margin-top: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section id="loginScreen" class="screen active">
+      <div class="card">
+        <div class="center"><div class="brand-badge">Technique Camp</div></div>
+        <h1>Technique Camp</h1>
+        <p style="text-align:center;">Enter the passcode to access Storage and Technique Hospital.</p>
+        <input id="passcodeInput" type="password" placeholder="Passcode" inputmode="numeric" autocomplete="current-password" />
+        <button type="button" onclick="checkPasscode()">Enter</button>
+        <p id="loginError" class="error"></p>
+      </div>
+      <p class="footer-note">Simple access control only. Do not use this for sensitive medical information.</p>
+    </section>
+
+    <section id="menuScreen" class="screen">
+      <div class="card">
+        <div class="center"><div class="brand-badge">Technique Camp</div></div>
+        <h1>Technique Camp</h1>
+        <p class="status"><span id="modePill" class="pill local">Starting...</span></p>
+        <p class="status" id="connectionStatus">Connecting to database...</p>
+        <div id="setupWarning" class="warning-box">
+          Firebase is not configured yet. This file is now working in local demo mode only, so data will not sync between phones until you paste your Firebase configuration in the code.
+        </div>
+        <div class="stats-grid">
+          <div class="compact-card center"><h3 id="storageCount">0</h3><p>Storage active records</p></div>
+          <div class="compact-card center"><h3 id="hospitalCount">0</h3><p>Hospital records</p></div>
+          <div class="compact-card center"><h3 id="treatmentCount">0</h3><p>Treatment suggestions</p></div>
+        </div>
+        <div class="menu-grid">
+          <button type="button" class="menu-button" onclick="showScreen('storageScreen')">Storage</button>
+          <button type="button" class="menu-button" onclick="showScreen('hospitalScreen')">Technique Hospital</button>
+        </div>
+        <button type="button" class="btn-secondary" onclick="logout()">Logout</button>
+      </div>
+    </section>
+
+    <section id="storageScreen" class="screen">
+      <div class="top-bar">
+        <button type="button" class="btn-secondary" onclick="showScreen('menuScreen')">Back</button>
+        <button type="button" class="btn-secondary" onclick="logout()">Logout</button>
+      </div>
+
+      <div class="card">
+        <h2>Storage</h2>
+        <p>Add only what was taken. When items are returned, enter the returned quantity. If only part of the quantity is returned, the remaining quantity stays in the table.</p>
+
+        <div class="form-grid-3">
+          <div>
+            <label>Person who took it</label>
+            <input id="storagePerson" type="text" placeholder="Example: Jad" />
+          </div>
+          <div>
+            <label>Item name</label>
+            <input id="storageItem" type="text" placeholder="Example: Chair" />
+          </div>
+          <div>
+            <label>Quantity</label>
+            <input id="storageQuantity" type="number" min="1" step="1" placeholder="Example: 5" />
+          </div>
+        </div>
+
+        <button type="button" onclick="addStorageRecord()">Add Taken Item</button>
+      </div>
+
+      <div class="card">
+        <h3>Currently Taken Items</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Hour</th>
+                <th>Person</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="storageTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="hospitalScreen" class="screen">
+      <div class="top-bar">
+        <button type="button" class="btn-secondary" onclick="showScreen('menuScreen')">Back</button>
+        <button type="button" class="btn-secondary" onclick="logout()">Logout</button>
+      </div>
+
+      <div class="card">
+        <h2>Technique Hospital</h2>
+        <p>Register every case, what was given, and the hour the child arrived.</p>
+
+        <div class="form-grid-2">
+          <div>
+            <label>Name</label>
+            <input id="hospitalName" type="text" placeholder="First name" />
+          </div>
+          <div>
+            <label>Family name</label>
+            <input id="hospitalFamily" type="text" placeholder="Family name" />
+          </div>
+        </div>
+
+        <label>Case</label>
+        <input id="hospitalCase" type="text" placeholder="Example: headache" oninput="showTreatmentSuggestion()" />
+
+        <div id="treatmentSuggestion" class="suggestion"></div>
+
+        <label>What we gave / treatment</label>
+        <textarea id="hospitalTreatment" placeholder="Example: Panadol if allowed, rest, bandage..."></textarea>
+
+        <label>Notes</label>
+        <textarea id="hospitalNotes" placeholder="Optional notes"></textarea>
+
+        <button type="button" onclick="addHospitalRecord()">Add Hospital Record</button>
+      </div>
+
+      <div class="card">
+        <h3>Hospital Records</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Hour</th>
+                <th>Name</th>
+                <th>Family name</th>
+                <th>Case</th>
+                <th>Treatment</th>
+                <th>Notes</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="hospitalTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Treatment Suggestions</h3>
+        <p class="muted">Add predefined cases and the treatment/procedure to follow. These suggestions are shared across phones after Firebase is configured.</p>
+        <div class="form-grid-2">
+          <div>
+            <label>Case keyword</label>
+            <input id="suggestionCase" type="text" placeholder="Example: headache" />
+          </div>
+          <div>
+            <label>Suggested treatment / procedure</label>
+            <input id="suggestionTreatment" type="text" placeholder="Example: Panadol if allowed by responsible person" />
+          </div>
+        </div>
+        <button type="button" onclick="addTreatmentSuggestion()">Save Suggestion</button>
+        <div class="table-wrap" style="margin-top:16px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Case</th>
+                <th>Suggestion</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="suggestionsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getDatabase, ref, push, onValue, update, remove, set } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+    /*********************************************************************
+     * IMPORTANT: To make the data appear on all phones, replace this block
+     * with your Firebase web app configuration.
+     * Firebase Console > Project settings > Your apps > Web app > Config
+     *********************************************************************/
+    const firebaseConfig = {
+      apiKey: "PASTE_YOUR_API_KEY_HERE",
+      authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://PASTE_YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "PASTE_YOUR_PROJECT_ID",
+      storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
+      appId: "PASTE_YOUR_APP_ID"
+    };
+
+    const PASSCODE = "1234567890";
+    const DB_ROOT = "techniqueCamp";
+    const LOCAL_KEY = "techniqueCampLocalDemo_v2";
+
+    const defaultTreatments = {
+      headache: "Follow the camp first-aid protocol. Example: Panadol only if allowed by the responsible person and parent/medical rules.",
+      cut: "Clean the wound, apply disinfectant if available, cover with a sterile bandage, and inform the responsible person.",
+      burn: "Cool with clean running water if possible, do not apply creams unless instructed, and inform the responsible person.",
+      stomachache: "Let the child rest, monitor symptoms, and inform the responsible person before giving anything.",
+      dizziness: "Let the child sit or lie down, give water if appropriate, monitor, and inform the responsible person."
+    };
+
+    const state = {
+      storage: {},
+      hospital: {},
+      treatments: {},
+      firebaseReady: false,
+      db: null
+    };
+
+    function firebaseIsConfigured() {
+      return firebaseConfig.apiKey &&
+        !firebaseConfig.apiKey.includes("PASTE") &&
+        firebaseConfig.databaseURL &&
+        firebaseConfig.databaseURL.startsWith("https://") &&
+        !firebaseConfig.databaseURL.includes("PASTE");
+    }
+
+    function nowHour() {
+      return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function makeId() {
+      return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 9);
+    }
+
+    function normalizeText(value) {
+      return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>'"]/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+      }[char]));
+    }
+
+    function getLocalData() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(LOCAL_KEY) || "{}");
+        return {
+          storage: saved.storage || {},
+          hospital: saved.hospital || {},
+          treatments: saved.treatments || defaultTreatments
+        };
+      } catch (error) {
+        return { storage: {}, hospital: {}, treatments: defaultTreatments };
+      }
+    }
+
+    function saveLocalData() {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify({
+        storage: state.storage,
+        hospital: state.hospital,
+        treatments: state.treatments
+      }));
+    }
+
+    function setStatus(text, online) {
+      document.getElementById("connectionStatus").textContent = text;
+      const pill = document.getElementById("modePill");
+      pill.textContent = online ? "Online database active" : "Local demo mode";
+      pill.className = "pill " + (online ? "online" : "local");
+      document.getElementById("setupWarning").classList.toggle("show", !online);
+    }
+
+    function dataPath(section) {
+      return `${DB_ROOT}/${section}`;
+    }
+
+    function startFirebase() {
+      if (!firebaseIsConfigured()) {
+        const local = getLocalData();
+        state.storage = local.storage;
+        state.hospital = local.hospital;
+        state.treatments = local.treatments;
+        setStatus("Firebase is not configured yet. Paste the Firebase config in index.html to sync between phones.", false);
+        renderAll();
+        return;
+      }
+
+      try {
+        const app = initializeApp(firebaseConfig);
+        state.db = getDatabase(app);
+        state.firebaseReady = true;
+        setStatus("Connected. Data will update automatically on all phones.", true);
+
+        onValue(ref(state.db, dataPath("storage")), snapshot => {
+          state.storage = snapshot.val() || {};
+          renderStorage();
+          updateCounts();
+        }, error => setStatus("Database error: " + error.message, false));
+
+        onValue(ref(state.db, dataPath("hospital")), snapshot => {
+          state.hospital = snapshot.val() || {};
+          renderHospital();
+          updateCounts();
+        }, error => setStatus("Database error: " + error.message, false));
+
+        onValue(ref(state.db, dataPath("treatments")), async snapshot => {
+          const value = snapshot.val();
+          if (!value || Object.keys(value).length === 0) {
+            await set(ref(state.db, dataPath("treatments")), defaultTreatments);
+            state.treatments = defaultTreatments;
+          } else {
+            state.treatments = value;
+          }
+          renderSuggestions();
+          showTreatmentSuggestion();
+          updateCounts();
+        }, error => setStatus("Database error: " + error.message, false));
+      } catch (error) {
+        setStatus("Firebase configuration error: " + error.message, false);
+        const local = getLocalData();
+        state.storage = local.storage;
+        state.hospital = local.hospital;
+        state.treatments = local.treatments;
+        renderAll();
+      }
+    }
+
+    async function createRecord(section, value) {
+      if (state.firebaseReady) {
+        await push(ref(state.db, dataPath(section)), value);
+      } else {
+        state[section][makeId()] = value;
+        saveLocalData();
+        renderAll();
+      }
+    }
+
+    async function updateRecord(section, id, value) {
+      if (state.firebaseReady) {
+        await update(ref(state.db, `${dataPath(section)}/${id}`), value);
+      } else {
+        state[section][id] = { ...state[section][id], ...value };
+        saveLocalData();
+        renderAll();
+      }
+    }
+
+    async function removeRecord(section, id) {
+      if (state.firebaseReady) {
+        await remove(ref(state.db, `${dataPath(section)}/${id}`));
+      } else {
+        delete state[section][id];
+        saveLocalData();
+        renderAll();
+      }
+    }
+
+    function recordsToSortedArray(records) {
+      return Object.entries(records || {})
+        .map(([id, value]) => ({ id, ...value }))
+        .sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+    }
+
+    function renderStorage() {
+      const tbody = document.getElementById("storageTable");
+      const rows = recordsToSortedArray(state.storage);
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty">No items are currently taken.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map(row => `
+        <tr>
+          <td data-label="Hour">${escapeHtml(row.hour)}</td>
+          <td data-label="Person">${escapeHtml(row.person)}</td>
+          <td data-label="Item">${escapeHtml(row.item)}</td>
+          <td data-label="Quantity"><strong>${escapeHtml(row.quantity)}</strong></td>
+          <td data-label="Action">
+            <button type="button" class="btn-small" onclick="returnStorageRecord('${row.id}', ${Number(row.quantity) || 0})">Returned</button>
+            <button type="button" class="btn-small btn-danger" onclick="deleteStorageRecord('${row.id}')">Delete</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function renderHospital() {
+      const tbody = document.getElementById("hospitalTable");
+      const rows = recordsToSortedArray(state.hospital);
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty">No hospital records yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map(row => `
+        <tr>
+          <td data-label="Hour">${escapeHtml(row.hour)}</td>
+          <td data-label="Name">${escapeHtml(row.name)}</td>
+          <td data-label="Family name">${escapeHtml(row.family)}</td>
+          <td data-label="Case">${escapeHtml(row.caseText)}</td>
+          <td data-label="Treatment">${escapeHtml(row.treatment)}</td>
+          <td data-label="Notes">${escapeHtml(row.notes)}</td>
+          <td data-label="Action"><button type="button" class="btn-small btn-danger" onclick="deleteHospitalRecord('${row.id}')">Delete</button></td>
+        </tr>
+      `).join("");
+    }
+
+    function renderSuggestions() {
+      const tbody = document.getElementById("suggestionsTable");
+      const rows = Object.entries(state.treatments || {}).sort((a, b) => a[0].localeCompare(b[0]));
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="3" class="empty">No suggestions saved yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map(([caseKey, treatment]) => `
+        <tr>
+          <td data-label="Case">${escapeHtml(caseKey)}</td>
+          <td data-label="Suggestion">${escapeHtml(treatment)}</td>
+          <td data-label="Action"><button type="button" class="btn-small btn-danger" onclick="deleteTreatmentSuggestion('${escapeHtml(caseKey).replace(/'/g, "\\'")}')">Delete</button></td>
+        </tr>
+      `).join("");
+    }
+
+    function updateCounts() {
+      document.getElementById("storageCount").textContent = Object.keys(state.storage || {}).length;
+      document.getElementById("hospitalCount").textContent = Object.keys(state.hospital || {}).length;
+      document.getElementById("treatmentCount").textContent = Object.keys(state.treatments || {}).length;
+    }
+
+    function renderAll() {
+      renderStorage();
+      renderHospital();
+      renderSuggestions();
+      updateCounts();
+      showTreatmentSuggestion();
+    }
+
+    window.showScreen = function(screenId) {
+      document.querySelectorAll(".screen").forEach(screen => screen.classList.remove("active"));
+      document.getElementById(screenId).classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.checkPasscode = function() {
+      const value = document.getElementById("passcodeInput").value.trim();
+      if (value === PASSCODE) {
+        sessionStorage.setItem("techniqueCampLoggedIn", "yes");
+        document.getElementById("loginError").textContent = "";
+        showScreen("menuScreen");
+      } else {
+        document.getElementById("loginError").textContent = "Wrong passcode.";
+      }
+    };
+
+    window.logout = function() {
+      sessionStorage.removeItem("techniqueCampLoggedIn");
+      document.getElementById("passcodeInput").value = "";
+      showScreen("loginScreen");
+    };
+
+    window.addStorageRecord = async function() {
+      const person = document.getElementById("storagePerson").value.trim();
+      const item = document.getElementById("storageItem").value.trim();
+      const quantity = Number(document.getElementById("storageQuantity").value);
+
+      if (!person || !item || !Number.isInteger(quantity) || quantity < 1) {
+        alert("Please enter person, item, and a valid quantity.");
+        return;
+      }
+
+      await createRecord("storage", {
+        person,
+        item,
+        quantity,
+        hour: nowHour(),
+        createdAtMs: Date.now()
+      });
+
+      document.getElementById("storagePerson").value = "";
+      document.getElementById("storageItem").value = "";
+      document.getElementById("storageQuantity").value = "";
+    };
+
+    window.returnStorageRecord = async function(id, currentQuantity) {
+      const answer = prompt(`How many were returned? Current quantity: ${currentQuantity}`, String(currentQuantity));
+      if (answer === null) return;
+      const returnedQuantity = Number(answer);
+
+      if (!Number.isInteger(returnedQuantity) || returnedQuantity < 1) {
+        alert("Please enter a valid returned quantity.");
+        return;
+      }
+
+      if (returnedQuantity >= currentQuantity) {
+        await removeRecord("storage", id);
+      } else {
+        await updateRecord("storage", id, {
+          quantity: currentQuantity - returnedQuantity,
+          lastReturnedAtMs: Date.now(),
+          lastReturnedHour: nowHour()
+        });
+      }
+    };
+
+    window.deleteStorageRecord = async function(id) {
+      if (confirm("Delete this storage record?")) {
+        await removeRecord("storage", id);
+      }
+    };
+
+    window.addHospitalRecord = async function() {
+      const name = document.getElementById("hospitalName").value.trim();
+      const family = document.getElementById("hospitalFamily").value.trim();
+      const caseText = document.getElementById("hospitalCase").value.trim();
+      const treatment = document.getElementById("hospitalTreatment").value.trim();
+      const notes = document.getElementById("hospitalNotes").value.trim();
+
+      if (!name || !family || !caseText || !treatment) {
+        alert("Please enter name, family name, case, and treatment.");
+        return;
+      }
+
+      await createRecord("hospital", {
+        name,
+        family,
+        caseText,
+        treatment,
+        notes,
+        hour: nowHour(),
+        createdAtMs: Date.now()
+      });
+
+      document.getElementById("hospitalName").value = "";
+      document.getElementById("hospitalFamily").value = "";
+      document.getElementById("hospitalCase").value = "";
+      document.getElementById("hospitalTreatment").value = "";
+      document.getElementById("hospitalNotes").value = "";
+      showTreatmentSuggestion();
+    };
+
+    window.deleteHospitalRecord = async function(id) {
+      if (confirm("Delete this hospital record?")) {
+        await removeRecord("hospital", id);
+      }
+    };
+
+    window.showTreatmentSuggestion = function() {
+      const input = normalizeText(document.getElementById("hospitalCase")?.value || "");
+      const box = document.getElementById("treatmentSuggestion");
+      if (!input || !box) {
+        if (box) box.classList.remove("show");
+        return;
+      }
+
+      const treatments = state.treatments || {};
+      let matchedKey = Object.keys(treatments).find(key => normalizeText(key) === input);
+      if (!matchedKey) {
+        matchedKey = Object.keys(treatments).find(key => input.includes(normalizeText(key)) || normalizeText(key).includes(input));
+      }
+
+      if (matchedKey) {
+        box.innerHTML = `<strong>Suggested for ${escapeHtml(matchedKey)}:</strong><br>${escapeHtml(treatments[matchedKey])}<br><button type="button" class="btn-small" onclick="useTreatmentSuggestion('${escapeHtml(matchedKey).replace(/'/g, "\\'")}')">Use this suggestion</button>`;
+        box.classList.add("show");
+      } else {
+        box.classList.remove("show");
+      }
+    };
+
+    window.useTreatmentSuggestion = function(caseKey) {
+      document.getElementById("hospitalTreatment").value = state.treatments[caseKey] || "";
+    };
+
+    window.addTreatmentSuggestion = async function() {
+      const rawCase = document.getElementById("suggestionCase").value.trim();
+      const treatment = document.getElementById("suggestionTreatment").value.trim();
+      const caseKey = normalizeText(rawCase);
+
+      if (!caseKey || !treatment) {
+        alert("Please enter both the case keyword and the suggested treatment.");
+        return;
+      }
+
+      if (state.firebaseReady) {
+        await set(ref(state.db, `${dataPath("treatments")}/${caseKey}`), treatment);
+      } else {
+        state.treatments[caseKey] = treatment;
+        saveLocalData();
+        renderAll();
+      }
+
+      document.getElementById("suggestionCase").value = "";
+      document.getElementById("suggestionTreatment").value = "";
+    };
+
+    window.deleteTreatmentSuggestion = async function(caseKey) {
+      if (!confirm("Delete this treatment suggestion?")) return;
+      if (state.firebaseReady) {
+        await remove(ref(state.db, `${dataPath("treatments")}/${caseKey}`));
+      } else {
+        delete state.treatments[caseKey];
+        saveLocalData();
+        renderAll();
+      }
+    };
+
+    document.getElementById("passcodeInput").addEventListener("keydown", event => {
+      if (event.key === "Enter") checkPasscode();
+    });
+
+    startFirebase();
+
+    if (sessionStorage.getItem("techniqueCampLoggedIn") === "yes") {
+      showScreen("menuScreen");
+    }
+  </script>
+</body>
+</html>
